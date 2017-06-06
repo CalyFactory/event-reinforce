@@ -67,20 +67,26 @@ class Reinforce:
 		# 추천이 완벽할경우.값을 바로 사용할수있도록 한다.
 
 		if self.__event_reco_status_code == EventRecoStatusCode.RECO_PERFECT:
-			#DB에 값을넣고.
+			
 			locations = self.event_info_data["locations"]
-			region = locations[0]["region"]
-			surrounding_station =  self.__setSurroundingStation(region[:len(region)-1])				
-			locations.append({
-					"no" : 1,
-					"region" : surrounding_station
-				})
+			#locations의 길이가 1이라면..
+			if len(locations) == 1:
+				region = locations[0]["region"]
+				surrounding_station =  self.__setSurroundingStation(region[:len(region)-1])				
+				locations.append({
+						"no" : 1,
+						"region" : surrounding_station
+					})
+			#db에 최종본 저장
+			self.__setEventAnalaysisDB()
 
+			#locations의 길이기 2라면 그냥 패스한다(주변역 없이 원래 넣어진데이터가있따며)
 			#현재infojson을 그냥 사용할수있도록 패스합니다.
 			self.event_reco_result = reinforce_result(EventRecoStatusCode.RECO_PERFECT.value,self.event_info_data)
 
 		elif self.__event_reco_status_code == EventRecoStatusCode.RECO_CANT:
-			#DB에 값을넣고.
+			#db에 최종본 저장
+			self.__setEventAnalaysisDB()
 			#현재infojson을 사용할수없게 값을 리턴해줍니다.
 			self.event_reco_result = reinforce_result(EventRecoStatusCode.RECO_CANT.value,"None")
 
@@ -162,7 +168,8 @@ class Reinforce:
 					})				
 			
 			self.event_info_data["locations"] = new_locations
-		# 	print(self.event_info_data)
+			
+			self.__setEventAnalaysisDB()
 			self.event_reco_result = reinforce_result(EventRecoStatusCode.RECO_NO_LOCA_HAS_EVENTTYPE.value,self.event_info_data)
 
 	def __setSurroundingStation(self,station_name):		
@@ -177,5 +184,97 @@ class Reinforce:
 				)
 		)					
 		return rows[0]["surrounding_station"]	
+
+	def __setEventAnalaysisDB(self):
+		locations = self.event_info_data["locations"]
+		#locations db에 다 넣어줌.
+		event_hashkey = self.event_info_data["event_hashkey"]
+
+		#로케이션이 None이아니면
+		if locations != "None":
+			location_hashkey = utils.makeHashKey(event_hashkey)
+			for location in locations:
+				db_manager.query(
+						"""
+						INSERT INTO USER_EVENT_LOCATION
+						(location_hashkey,priority,region)
+						VALUES (%s,%s,%s)
+						""",		
+						(location_hashkey,location["no"],location["region"])					
+				)
+		#로케이션이 None이면
+		#로케이션 해시키가 Null이다.
+		else:
+			location_hashkey = None
+
+
+
+		#type 넣어줌
+		
+		event_types = self.event_info_data["event_types"]
+		#이벤트 타입이 존재하면
+		if event_types != "None":
+			type_hashkey = utils.makeHashKey(event_hashkey)
+			for event_type in event_types:
+				db_manager.query(
+						"""
+						INSERT INTO USER_EVENT_TYPE
+						(type_hashkey,event_type)
+						VALUES (%s,%s)
+						""",		
+						(type_hashkey,event_type["id"])					
+				)
+		#event Type이 None이면
+		#type hashkey가 null이다.
+		else :
+			type_hashkey = None
+
+
+		#유저시간에맞도록 디비에 넣어준
+		rows = utils.fetch_all_json(
+			db_manager.query(
+					"""
+					SELECT *FROM EVENT
+					WHERE event_hashkey = %s
+					""",		
+					(self.event_info_data["event_hashkey"],)					
+			)
+		)
+		event = rows[0]
+		print(event)
+		start_year = event["start_dt"][:4]
+		start_month = event["start_dt"][5:7]
+		start_date = event["start_dt"][8:10]
+		
+		end_year = event["end_dt"][:4]
+		end_month = event["end_dt"][5:7]
+		end_date = event["end_dt"][8:10]	
+
+		event_start_date = start_year + "-" + start_month + "-" + start_date 
+		event_end_date =  end_year + "-" + end_month + "-" + end_date 
+
+		extract_start = self.event_info_data["time_set"]["extract_start"]
+		extract_end = self.event_info_data["time_set"]["extract_end"]
+		event_start = self.event_info_data["time_set"]["event_start"]
+		event_end = self.event_info_data["time_set"]["event_end"]
+
+		if extract_start != "None":
+			extract_start = event_start_date + " " + extract_start
+			extract_end = event_end_date + " " + extract_end
+		else :
+			extract_start = None
+			extract_end = None
+
+		event_start = event_start_date + " " + event_start
+		event_end = event_end_date + " " + event_end
+
+		db_manager.query(
+					"""
+					INSERT INTO USER_EVENT_ANALYSIS
+					(event_hashkey,location_hashkey,extract_start,extract_end,event_start,event_end,type_hashkey)
+					VALUES (%s,%s,%s,%s,%s,%s,%s)
+					""",		
+					(event_hashkey,location_hashkey,extract_start,extract_end,event_start,event_end,type_hashkey)					
+			)
 
 				

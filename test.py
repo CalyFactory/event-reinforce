@@ -16,17 +16,17 @@ class TestReinForce(unittest.TestCase):
 
 	def test_reinforceFunction(self):
 		
-		hasAll = test_data["hasAll"]
-		reinforce = Reinforce(hasAll)
-		print("1.hasAll result => "+str(reinforce.event_reco_result))		
+		# hasAll = test_data["hasAll"]
+		# reinforce = Reinforce(hasAll)
+		# print("1.hasAll result => "+str(reinforce.event_reco_result))		
 
 		# noLocationNoEventType = test_data["noLocationNoEventType"]
 		# reinforce = Reinforce(noLocationNoEventType)			
 		# print("2. noLocationNoEventType result => "+str(reinforce.event_reco_result))
 
-		# noLocationHasEventType = test_data["noLocationHasEventType00"]
-		# reinforce = Reinforce(noLocationHasEventType)			
-		# print("2. noLocationHasEventType result => "+str(reinforce.event_reco_result))
+		noLocationHasEventType = test_data["noLocationHasEventType00"]
+		reinforce = Reinforce(noLocationHasEventType)			
+		print("2. noLocationHasEventType result => "+str(reinforce.event_reco_result))
 
 		# self.assertEqual(instance.event_InfoJson, 'expected_json')
 

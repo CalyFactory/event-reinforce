@@ -25,6 +25,7 @@
   }
   ,
   "noLocationNoEventType" : {
+      "event_hashkey":"0061ddc107e3d586e01de76ad3ab619d667a4b604636cd5b3454cde4",
       "locations" : "None",
       "time_set" : {
         "extract_start": "18:00",
