@@ -35,7 +35,7 @@
       },
       "event_types" : "None"
   },
-  "noLocationHasEventType00" : {    
+  "noLocationHasEventType" : {    
     "event_hashkey":"0061ddc107e3d586e01de76ad3ab619d667a4b604636cd5b3454cde4",
     "locations" :  "None",
     "time_set" : {
@@ -53,22 +53,20 @@
         }
     ]
   }, 
-  "noLocationHasEventType01" : {    
-    "event_hashkey":"0061ddc107e3d586e01de76ad3ab619d667a4b604636cd5b3454cde4 @@",
-    "locations" :  "None",
+  "hasLocationNoEventType" : {    
+    "event_hashkey":"0061ddc107e3d586e01de76ad3ab619d667a4b604636cd5b3454cde4",
+    "locations" :  [
+        {
+            "no" : 0,
+            "region" : "선릉역"
+        }
+    ],
     "time_set" : {
       "extract_start": "18:00",
       "extract_end": "19:00",
       "event_start": "10:00",
       "event_end": "11:00"
     },
-    "event_types" : [
-        {
-            "id" : "CPI02"
-        },
-        {
-            "id" : "CPI01"
-        }
-    ]
+    "event_types" : "None"
   }  
 }
